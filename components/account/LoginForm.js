@@ -1,20 +1,18 @@
 import React, { useState } from 'react'
-import { size } from 'lodash'
 import { StyleSheet, Text, View } from 'react-native'
 import { Button, Icon, Input } from 'react-native-elements'
 import { useNavigation } from '@react-navigation/native'
+import { isEmpty } from 'lodash'
 
-import { validateEmail } from '../../utils/helpers'
-import { registerUser } from '../../utils/actions'
 import Loading from '../Loading'
+import { validateEmail } from '../../utils/helpers'
+import { loginWithEmailAndPassword } from '../../utils/actions'
 
-
-export default function RegisterForm() {
+export default function LoginForm() {
     const [showPassword, setShowPassword] = useState(false)
     const [formData, setFormData] = useState(defaultFormValues())
     const [errorEmail, setErrorEmail] = useState("")
     const [errorPassword, setErrorPassword] = useState("")
-    const [errorConfirm, setErrorConfirm] = useState("")
     const [loading, setLoading] = useState(false)
 
     const navigation = useNavigation()
@@ -23,46 +21,36 @@ export default function RegisterForm() {
         setFormData({ ...formData, [type]: e.nativeEvent.text })
     }
 
-    const doRegisterUser = async() => {
+    const doLogin = async() =>{
         if (!validateData()){
             return
         }
 
         setLoading(true)
-        const result = await registerUser(formData.email, formData.password)
+        const result = await loginWithEmailAndPassword(formData.email, formData.password)
         setLoading(false)
 
         if (!result.statusResponse){
             setErrorEmail(result.error)
+            setErrorPassword(result.error)
             return
         }
+
         navigation.navigate("account")
     }
 
     const validateData = () => {
-        setErrorConfirm("")
         setErrorEmail("")
         setErrorPassword("")
         let isValid = true
 
         if (!validateEmail(formData.email)){
-            setErrorEmail("Debes ingresar un email válido.")
+            setErrorEmail("Debes ingresar un email válido")
             isValid = false
         }
 
-        if(size(formData.password) < 6){
-            setErrorPassword("Debes ingresar una contraseña de al menos seis caracteres.")
-            isValid = false
-        }
-
-        if(size(formData.confirm) < 6){
-            setErrorConfirm("Debes ingresar una confirmación de contraseña de al menos seis caracteres.")
-            isValid = false
-        }
-
-        if(formData.password !== formData.confirm){
-            setErrorPassword("Las contraseñas no coinciden")
-            setErrorConfirm("Las contraseñas no coinciden")
+        if (isEmpty(formData.password)){
+            setErrorPassword("Debes ingresar tu contraseña")
             isValid = false
         }
 
@@ -70,7 +58,7 @@ export default function RegisterForm() {
     }
 
     return (
-        <View style={styles.form}>
+        <View style={styles.container}>
             <Input
                 containerStyle={styles.input}
                 placeholder="Ingresa tu email..."
@@ -96,44 +84,27 @@ export default function RegisterForm() {
                     />
                 }
             />
-            <Input
-                containerStyle={styles.input}
-                placeholder="Confirma tu contraseña..."
-                password={true}
-                secureTextEntry={!showPassword}
-                onChange={(e) => onChange(e, "confirm")}
-                errorMessage={errorConfirm}
-                defaultValue={formData.confirm}
-                rightIcon={
-                    <Icon
-                        type="material-community"
-                        name={showPassword ? "eye-off-outline" : "eye-outline"}
-                        iconStyle={styles.icon}
-                        onPress={() => setShowPassword(!showPassword)}
-                    />
-                }
-            />
             <Button
-                title="Registrar Nuevo Usuario"
+                title="Iniciar Sesión"
                 containerStyle={styles.btnContainer}
                 buttonStyle={styles.btn}
-                onPress={() => doRegisterUser()}
+                onPress={() => doLogin()}
             />
-            <Loading isVisible={loading} text="Creando cuenta"/>
+            <Loading isVisible={loading} text="Iniciando Sesión"/>
         </View>
     )
 }
 
 const defaultFormValues = () => {
-    return {email: "", password: "", confirm: ""}
+    return {email: "", password: ""}
 }
 
 const styles = StyleSheet.create({
-    form:{
+    container: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
         marginTop: 30
-    },
-    input: {
-        width: "100%"
     },
     btnContainer:{
         marginTop: 20,
@@ -142,6 +113,9 @@ const styles = StyleSheet.create({
     },
     btn:{
         backgroundColor: "#0e4f5c"
+    },
+    input: {
+        width: "100%"
     },
     icon: {
         color: "#7fabb7"

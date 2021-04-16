@@ -114,7 +114,7 @@ export default function RegisterForm() {
                 }
             />
             <Button
-                title="Registrar Nuevo Usuario"
+                title="Registrarse"
                 containerStyle={styles.btnContainer}
                 buttonStyle={styles.btn}
                 onPress={() => doRegisterUser()}

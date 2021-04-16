@@ -4,14 +4,13 @@ import { Icon } from 'react-native-elements'
 import firebase from 'firebase/app'
 
 import Loading from '../../components/Loading'
-import { isUserLogged } from '../../utils/actions'
 
-export default function Restaurants() {    
+export default function Restaurants({ navigation }) {    
     const [user, setUser] = useState(null)
 
     useEffect(() => {
-        firebase.auth().onAuthStateChanged((user) => {
-            setUser(user)
+        firebase.auth().onAuthStateChanged((userInfo) => {
+            userInfo ? setUser(true) :  setUser(false)
         })
     }, [])
 
@@ -30,6 +29,7 @@ export default function Restaurants() {
                         color="#0e4f5c"
                         reverse
                         containerStyle={styles.btnContainer}
+                        onPress={() => navigation.navigate("add-restaurant")}
                     />
                 )
             }

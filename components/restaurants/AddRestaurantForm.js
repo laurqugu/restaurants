@@ -7,8 +7,8 @@ import MapView from 'react-native-maps'
 import uuid from 'random-uuid-v4'
 
 import { getCurrentLocation, loadImageFromGallery, validateEmail } from '../../utils/helpers'
+import { addDocumentWithoutId, getCurrentUser, uploadImage } from '../../utils/actions'
 import Modal from '../../components/Modal'
-import { uploadImage } from '../../utils/actions'
 
 const widthScreen = Dimensions.get("window").width
 
@@ -29,12 +29,34 @@ export default function AddRestaurantForm({ toastRef, setLoading, navigation }) 
         }
 
         setLoading(true)
-        const response = await uploadImages()
-        console.log(response)
+        const responseLoadImage = await uploadImages()
+        const restaurant = {
+            name: formData.name,
+            address: formData.address,
+            address: formData.address,
+            description: formData.description,
+            callingCode: formData.callingCode,
+            phone: formData.phone,
+            locaton: locationRestaurant,
+            images: responseLoadImage,
+            rating: 0,
+            ratingTotal: 0,
+            quantityVoting: 0,
+            createAdd: new Date(),
+            createBy: getCurrentUser().uid
+        }
+
+        const responseAddDocument = await addDocumentWithoutId("restaurants", restaurant)
 
         setLoading(false)
 
-        console.log("Funciona")
+        if(!responseAddDocument.statusResponse){
+            toastRef.current.show("Error al guardar el restaurante, por favor intenta mas tarde")
+            return
+        }
+
+        navigation.navigate("restaurants")
+
     }
 
     const uploadImages = async() => {
